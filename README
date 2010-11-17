@@ -9,7 +9,7 @@ To use the Open Data Grab Kit templates:
 
 1. Download the updated version of XLWrap from:
 
-  <https://github.com/markbirbeck/xlwrap>
+  https://github.com/markbirbeck/xlwrap
 
 2. Change to the XLWrap directory. For example:
 
@@ -21,7 +21,7 @@ To use the Open Data Grab Kit templates:
 
 4. A SNORQL front-end on the triples will now be available from:
 
-  <http://localhost:8900/snorql/>
+  http://localhost:8900/snorql/
 
 5. Click 'Classes' on the right-hand side and ensure that the query returns datasets, payments, organisations and so on. Also note that the terminal window should display logging information as the query is executed.
 
@@ -32,4 +32,4 @@ If you find the kit useful for processing some public data why not submit your t
 
 The forum for discussing anything to do with the Grab Kit is here:
 
-  <http://groups.google.com/group/open-data-grab-kit>
+  http://groups.google.com/group/open-data-grab-kit
