@@ -1,0 +1,23 @@
+The Open Data Grab Kit is a set of tools and guidelines for converting open data.
+
+To convert data in formats such as CSV files to triples we often have to go through a number of repeatable steps. This project aims to capture those steps in a highly visible way so that the steps can be shared and discussed.
+
+To use the Open Data Grab Kit templates:
+
+1. Download the updated version of XLWrap from:
+
+  https://github.com/markbirbeck/xlwrap
+
+2. Change to the XLWrap directory. For example:
+
+  cd ~/workspace/xlwrap
+
+3. Launch the XLWrap server with a reference to an ODGK configuration file. For example, if you've placed the ODGK in a directory alongside XLWrap, and you want to use the local authority spend data templates, you would run this command:
+
+  bin/server -c ../open-data-grab-kit/lasd/config.ttl
+
+4. A SNORQL front-end on the triples will now be available from:
+
+  http://localhost:8900/snorql/
+
+5. Click 'Classes' on the right-hand side and ensure that the query returns datasets, payments, organisations and so on. Also note that the terminal window should display logging information as the query is executed.

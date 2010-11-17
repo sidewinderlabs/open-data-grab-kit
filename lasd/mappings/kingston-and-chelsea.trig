@@ -1,0 +1,64 @@
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+
+@prefix xl:		<http://purl.org/NET/xlwrap#> .
+
+@prefix gr:     <http://purl.org/goodrelations/v1#> .
+@prefix scv:    <http://purl.org/NET/scovo#> .
+@prefix dct:    <http://purl.org/dc/terms/> .
+@prefix :		<http://linkhq.com/> .
+
+{ [] a xl:Mapping ;
+	xl:offline "false"^^xsd:boolean ;
+
+	xl:template [
+		xl:fileName "http://uk.sitestat.com/rbkc/rbkc/s?idoc&amp;ns_type=pdf&amp;ns_url=http://www.rbkc.gov.uk/councilanddemocracy/idoc.ashx?docid=b4602c3e-1de5-47d3-a5bb-23372e6a119c&version=-1" ;
+		xl:sheetName "Kingston and Chelsea expenditure to suppliers over £500" ;
+
+		xl:constantGraph :Dataset ;
+		xl:templateGraph :PaymentsTemplate ;
+		xl:transform [
+			a rdf:Seq ;
+			rdf:_1 [
+				a xl:RowShift ;
+				xl:breakCondition "ALLEMPTY(A2)" ;
+			] ;
+			rdf:_2 [
+				a xl:FileRepeat ;
+				xl:breakCondition "ALLEMPTY(A2)" ;
+				xl:fileNames "
+					http://uk.sitestat.com/rbkc/rbkc/s?idoc&amp;ns_type=pdf&amp;ns_url=http://www.rbkc.gov.uk/councilanddemocracy/idoc.ashx?docid=b4602c3e-1de5-47d3-a5bb-23372e6a119c&version=-1
+				" ;
+			]
+		]
+	] .
+}
+
+:Dataset {
+	<> owl:import scv: .
+
+	gr:BusinessEntity rdfs:subClassOf scv:Dimension .
+	dct:created rdfs:subClassOf scv:Dimension .
+	dct:description rdfs:subClassOf scv:Dimension .
+	dct:identifier rdfs:subClassOf scv:Dimension .
+
+	[ xl:uri "http://levelhq.com/id/dataset/lasd/00AX" ]
+		a scv:Dataset ;
+		dct:title "Payments to suppliers with a value over £500 from the London Borough of Kingston and Chelsea." ;
+		dct:publisher <http://statistics.data.gov.uk/id/local-authority-district/00AX> ;
+		dct:creator <http://levelhq.com/foaf.rdf#me> ;
+#issue		dct:date "NOW()"^^xl:Expr .
+}
+
+:PaymentsTemplate {
+	[ xl:uri "http://levelhq.com/id/dataset/lasd/00AX" ]
+		scv:datasetOf [
+			a scv:Item ;
+			dct:identifier "F2"^^xl:Expr ;
+			gr:BusinessEntity "URI('http://levelhq.com/id/company/local-authority-district/00AX/' & URLENCODE(LCASE(SUBSTITUTE(D2, ' ', '-'))))"^^xl:Expr ;
+			dct:created "DATE(G2)"^^xl:Expr ;
+			rdf:value "H2"^^xl:Expr ;
+		]
+}

@@ -1,0 +1,124 @@
+@prefix xl:		  <http://purl.org/NET/xlwrap#> .
+
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix dct:      <http://purl.org/dc/terms/> .
+
+@prefix void:     <http://rdfs.org/ns/void#> .
+@prefix interval: <http://reference.data.gov.uk/def/intervals/> .
+@prefix time:     <http://www.w3.org/2006/time#> .
+@prefix opmv:     <http://purl.org/net/opmv/ns#> .
+@prefix qb:       <http://purl.org/linked-data/cube#> .
+@prefix org:      <http://www.w3.org/ns/org#> .
+@prefix skos:     <http://www.w3.org/2004/02/skos/core#> .
+@prefix payment:  <http://reference.data.gov.uk/def/payment#> .
+
+@prefix :		  <http://linkhq.com/> .
+
+{
+	[] a xl:Mapping ;
+		xl:offline "false"^^xsd:boolean ;
+
+		xl:template [
+			xl:fileName "http://www.sutton.gov.uk/CHttpHandler.ashx?id=11771&p=0" ;
+			xl:sheetName "Sutton expenditure to suppliers over £500" ;
+
+			xl:templateGraph :SupplierTemplate ;
+
+			xl:transform [
+				a rdf:Seq ;
+				rdf:_1 [
+					a xl:RowShift ;
+					xl:restriction "B2" ;
+					xl:breakCondition "EMPTY(B2)" ;
+				] ;
+				rdf:_2 [
+					a xl:FileRepeat ;
+					xl:fileNames "
+						http://www.sutton.gov.uk/CHttpHandler.ashx?id=11771&p=0,
+						http://www.sutton.gov.uk/CHttpHandler.ashx?id=12087&p=0,
+						http://www.sutton.gov.uk/CHttpHandler.ashx?id=12461&p=0
+					" ;
+				]
+			]
+		] ;
+
+		xl:template [
+			xl:fileName "http://www.sutton.gov.uk/CHttpHandler.ashx?id=11771&p=0" ;
+			xl:sheetName "Sutton expenditure to suppliers over £500" ;
+
+			xl:constantGraph :Dataset ;
+			xl:templateGraph :PaymentsTemplate ;
+
+			xl:transform [
+				a rdf:Seq ;
+				rdf:_1 [
+					a xl:RowShift ;
+					xl:breakCondition "ALLEMPTY(A2)" ;
+				] ;
+				rdf:_2 [
+						a xl:FileRepeat ;
+						xl:fileNames "
+							http://www.sutton.gov.uk/CHttpHandler.ashx?id=11771&p=0,
+							http://www.sutton.gov.uk/CHttpHandler.ashx?id=12087&p=0,
+							http://www.sutton.gov.uk/CHttpHandler.ashx?id=12461&p=0
+						" ;
+				]
+			]
+		]
+		.
+}
+
+:SupplierTemplate {
+	[ xl:uri "URI('http://levelhq.com/def/local-authority-district/00BF/id/supplier/' & URLENCODE(LCASE(SUBSTITUTE(B2, ' ', '-'))))"^^xl:Expr ]
+		a org:Organization ;
+		rdfs:label "B2"^^xl:Expr
+		.
+}
+
+:Dataset {
+	<http://levelhq.com/def/local-authority-district/00BF/public/supplier_payments>
+		a payment:PaymentDataset , void:Dataset , opmv:Artifact ;
+		# basic metadata
+		rdfs:label "Sutton Supplier Payments where charge to specific cost centre is >= £500"@en ;
+		dct:license <http://data.gov.uk/id/licence> ;
+		#dct:temporal [
+		#	# this time is retrieved from the Last-Modified date on the original spreadsheet
+		#	time:hasBeginning <http://reference.data.gov.uk/id/gregorian-instant/2010-08-02T08:37:02>
+		#] ;
+		dct:source [ xl:uri "URI(FILENAME(A2))"^^xl:Expr ] ;
+
+		# statistical metadata
+		qb:structure payment:payments-with-expenditure-structure ;
+		qb:sliceKey payment:payment-slice ;
+		payment:currency <http://dbpedia.org/resource/Pound_sterling>
+		.
+}
+
+:PaymentsTemplate {
+	<http://levelhq.com/def/local-authority-district/00BF/public/supplier_payments>
+		qb:slice [ xl:uri "URI('http://levelhq.com/def/local-authority-district/00BF/id/transaction/' & A2)"^^xl:Expr ]
+		.
+
+	[ xl:uri "URI('http://levelhq.com/def/local-authority-district/00BF/id/transaction/' & A2)"^^xl:Expr ]
+		a payment:Payment , qb:Slice ;
+		rdfs:label "'Transaction ' & A2"^^xl:Expr ;
+		qb:sliceStructure payment:payment-slice ;
+		payment:transactionReference "A2"^^xl:Expr ;
+		payment:payer <http://statistics.data.gov.uk/id/local-authority/00BF> ;
+		payment:payee "URI('http://levelhq.com/def/local-authority-district/00BF/id/supplier/' & URLENCODE(LCASE(SUBSTITUTE(B2, ' ', '-'))))"^^xl:Expr ;
+		# payment:date <http://reference.data.gov.uk/id/day/2010-04-09> ;
+		payment:date "DATE(C2)"^^xl:Expr ;
+		payment:expenditureLine [ xl:uri "URI(FILENAME(A2) & '#' & ROW(A2))"^^xl:Expr ]
+		.
+
+	[ xl:uri "URI(FILENAME(A2) & '#' & ROW(A2))"^^xl:Expr ]
+		a payment:ExpenditureLine , qb:Observation ;
+		rdfs:label "'Expenditure Line ' & ROW(A2)"^^xl:Expr ;
+		qb:dataSet <http://levelhq.com/def/local-authority-district/00BF/public/supplier_payments> ;
+		payment:expenditureCode "URI('http://levelhq.com/def/local-authority-district/00BF/def/cost-centre/' & URLENCODE(LCASE(SUBSTITUTE(D2, ' ', '-'))))"^^xl:Expr ;
+		payment:netAmount "E2"^^xl:Expr
+		.
+}
