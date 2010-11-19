@@ -1,0 +1,90 @@
+# This file is written in N3 / Turtle
+
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+  
+@prefix module: <http://joseki.org/2003/06/module#> .
+@prefix joseki: <http://joseki.org/2005/06/configuration#> .
+@prefix ja:     <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix d2rq:	<http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix xl:		<http://purl.org/NET/xlwrap#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+
+<> rdfs:label "Joseki XLWrap Configuration" .
+
+<#server>  rdf:type joseki:Server ;
+    # Example of some initialization code.
+    joseki:initialization
+        [ module:implementation 
+            [ module:className <java:org.joseki.util.ServiceInitSimple> ;
+              rdfs:label "Example initializer" ; ]
+        ] ;
+    .
+
+<#service1>
+    rdf:type            joseki:Service ;
+    rdfs:label          "service point" ;
+    joseki:serviceRef   "sparql" ;  # web.xml must route this name to Joseki
+	joseki:dataset 		<#xlwrap> ;
+    joseki:processor    joseki:ProcessorSPARQL_FixedDS ;
+    .
+
+<> owl:imports xl: . # sometimes does not work - add tbox parts explicitly:
+xl:XLWrapDataset a rdfs:Class ;
+	rdfs:subClassOf ja:RDFDataset ;
+	ja:assembler "at.jku.xlwrap.dataset.XLWrapDatasetAssembler" ;
+	.
+	
+<#xlwrap> rdf:type xl:XLWrapDataset ;
+	rdfs:label "XLWrap" ;
+	xl:cacheDir <file:data> ;
+	xl:watchDir <file:mappings> ;
+#    joseki:generateStats	"true"^^xsd:boolean ;
+#    joseki:statsFile  <file:data/rdfstats.nt> ;
+    .
+
+
+## Processors
+
+joseki:ProcessorSPARQL
+    rdfs:label "General SPARQL processor" ;
+    rdf:type joseki:Processor ;
+    module:implementation joseki:ImplSPARQL ;
+
+    # Parameters - this processor processes FROM/FROM NAMED
+    joseki:allowExplicitDataset       "true"^^xsd:boolean ;
+    joseki:allowWebLoading            "true"^^xsd:boolean ;
+    ## And has no locking policy (it loads data each time).
+    ## The default is mutex (one request at a time)
+    joseki:lockingPolicy                joseki:lockingPolicyNone ;
+    .
+
+joseki:ProcessorSPARQL_FixedDS
+    rdfs:label "SPARQL processor for fixed datasets" ;
+    rdf:type joseki:Processor ;
+    module:implementation joseki:ImplSPARQL ;
+
+    # This processor does not accept queries with FROM/FROM NAMED
+    joseki:allowExplicitDataset       "false"^^xsd:boolean ;
+    joseki:allowWebLoading            "false"^^xsd:boolean ;
+    joseki:lockingPolicy              joseki:lockingPolicyMRSW ;
+    .
+
+joseki:ProcessorSPARQLUpdate
+    rdfs:label "SPARQL Udpate processor" ;
+    rdf:type joseki:Processor ;
+    module:implementation joseki:ImplSPARQLUpdate ;
+    joseki:lockingPolicy              joseki:lockingPolicyMRSW ;
+    .
+
+joseki:ImplSPARQL
+    rdf:type   joseki:ServiceImpl ;
+    module:className
+        <java:org.joseki.processors.SPARQL> .
+
+joseki:ImplSPARQLUpdate
+    rdf:type   joseki:ServiceImpl ;
+    module:className
+        <java:org.joseki.processors.SPARQLUpdate> .
