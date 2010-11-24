@@ -1,0 +1,5 @@
+#! /bin/bash
+
+curl -o /tmp/spenddata http://transparency.number10.gov.uk/money.php
+perl -0ne 'print "$1\n" while (/a\s*href\s*=\s*\"(.*?)\"\s*>.*?<\/a>/igm)' /tmp/spenddata
+rm /tmp/spenddata
